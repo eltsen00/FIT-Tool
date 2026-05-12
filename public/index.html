@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FIT 轨迹生成工具</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <span class="topbar-title">FIT 轨迹生成工具</span>
+        <span id="currentTemplateLabel" class="topbar-tag">加载配置中</span>
+        <span id="topbarCenter" class="topbar-center"></span>
+        <div class="topbar-actions">
+          <button id="fitToViewCenter" type="button" class="btn-secondary">套到视野中心</button>
+          <button id="generateFit" type="button" class="btn-primary">生成 FIT 文件</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="map-workspace">
+          <div id="map"></div>
+          <div id="mapInfo" class="map-info"></div>
+        </section>
+
+        <aside class="control-panel">
+          <div class="panel-section">
+            <h3 class="panel-title">跑道模板</h3>
+            <div class="form-row">
+              <select id="templateSelect" class="select-input"></select>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h3 class="panel-title">位置与跑道</h3>
+            <div class="form-row form-row-2col">
+              <div class="form-field">
+                <label for="centerLat">中心点纬度</label>
+                <input id="centerLat" type="number" placeholder="纬度" />
+              </div>
+              <div class="form-field">
+                <label for="centerLng">中心点经度</label>
+                <input id="centerLng" type="number" placeholder="经度" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="routeBearing">跑道方向角（度）</label>
+                <input id="routeBearing" type="number" />
+              </div>
+            </div>
+            <div class="form-row form-row-2col">
+              <div class="form-field">
+                <label for="stadiumStraightMeters">跑道长边（米）</label>
+                <input id="stadiumStraightMeters" type="number" />
+              </div>
+              <div class="form-field">
+                <label for="stadiumWidthMeters">跑道宽度（米）</label>
+                <input id="stadiumWidthMeters" type="number" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="jitterMeters">默认轨迹扰动（米）</label>
+                <input id="jitterMeters" type="number" />
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h3 class="panel-title">默认运动参数</h3>
+            <div class="form-row form-row-2col">
+              <div class="form-field">
+                <label for="hrRest">默认静息心率</label>
+                <input id="hrRest" type="number" />
+              </div>
+              <div class="form-field">
+                <label for="hrMax">默认最大心率</label>
+                <input id="hrMax" type="number" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="lapCount">默认圈数（重复次数）</label>
+                <input id="lapCount" type="number" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>默认平均配速</label>
+                <div class="pace-inputs">
+                  <input id="paceMinDefault" type="number" />
+                  <span class="pace-sep">'</span>
+                  <input id="paceSecDefault" type="number" />
+                  <span class="pace-sep">"</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h3 class="panel-title">多份导出</h3>
+            <div class="form-row form-row-inline">
+              <div class="form-field">
+                <label for="exportCount">导出份数</label>
+                <input id="exportCount" type="number" />
+              </div>
+              <button id="randomizeAllExports" type="button" class="btn-secondary btn-small">重新随机全部参数</button>
+            </div>
+            <div id="exportTimes" class="export-times"></div>
+          </div>
+
+          <div id="message" class="message"></div>
+        </aside>
+      </main>
+
+      <footer id="summaryBar" class="summary-bar">
+        <span id="summaryTemplate">模板：--</span>
+        <span class="summary-sep">|</span>
+        <span id="summaryLap">单圈约：-- km</span>
+        <span class="summary-sep">|</span>
+        <span id="summaryTotal">当前总距离：-- km</span>
+        <span class="summary-sep">|</span>
+        <span id="summaryExports">导出：1 份</span>
+        <span class="summary-sep">|</span>
+        <span id="summaryDateRange">日期：--</span>
+        <span class="summary-sep">|</span>
+        <span id="summaryTimeRange">时间：--</span>
+      </footer>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
