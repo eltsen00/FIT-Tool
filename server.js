@@ -18,7 +18,7 @@ const CONFIG_PATH = path.join(__dirname, "public", "config.json");
 const DEFAULT_WEATHER_CONFIG = {
   enabled: true,
   failOpen: true,
-  provider: "qweather",
+  provider: "openMeteo",
   timeoutMs: 4500,
   locationLabel: "route center",
   qweather: {
@@ -391,7 +391,7 @@ async function fetchWeatherForActivity(startDate, endDate, points) {
     return null;
   }
 
-  const provider = WEATHER_CONFIG.provider || "qweather";
+  const provider = WEATHER_CONFIG.provider || "openMeteo";
 
   if (provider === "qweather") {
     try {

@@ -128,11 +128,10 @@
   "weather": {
     "enabled": true,
     "failOpen": true,
-    "provider": "qweather",
+    "provider": "openMeteo",
     "timeoutMs": 4500,
     "locationLabel": "跑道中心",
     "qweather": {
-      "key": "",
       "forecastUrl": "https://devapi.qweather.com/v7/weather/24h",
       "forecastHours": 24
     },

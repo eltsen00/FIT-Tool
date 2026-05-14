@@ -137,31 +137,18 @@ config.json (WGS-84)
 
 ## 天气功能
 
-默认使用**和风天气 (QWeather)** API，查询活动时间对应的逐小时天气数据，写入 FIT 的 `WEATHER_CONDITIONS` 消息以及每个记录点的温度字段。
+默认使用 **Open-Meteo** 免费天气 API，查询活动时间对应的逐小时天气数据，写入 FIT 的 `WEATHER_CONDITIONS` 消息以及每个记录点的温度字段。无需注册或配置 API Key，开箱即用。
 
-### 配置 API Key
+### 切换天气源
 
-使用和风天气需要 API Key（免费注册，每天 1000 次请求）：
+若需切换到其他天气服务，修改 `public/config.json` 中 `weather.provider` 字段即可。目前支持：
 
-1. 前往 [和风天气开发平台](https://dev.qweather.com/) 注册账号
-2. 创建项目获取 API Key
-3. 配置 Key（任选其一）：
-   - 环境变量：`QWEATHER_KEY=your_key npm start`
-   - config.json：设置 `weather.qweather.key` 字段
+| 值 | 说明 |
+|---|---|
+| `openMeteo`（默认）| Open-Meteo，无需 Key，支持过去 92 天至未来 16 天的历史/预报数据 |
+| `qweather` | 和风天气，需配置 API Key |
 
-```json
-"weather": {
-  "qweather": {
-    "key": "你的API_KEY"
-  }
-}
-```
-
-若未配置 Key 或 API 不可用，默认**静默跳过**天气写入，不影响 FIT 文件生成。
-
-### 切换回 Open-Meteo
-
-将 `weather.provider` 改为 `"openMeteo"` 即可。Open-Meteo 无需 API Key，支持过去 92 天至未来 16 天的历史/预报数据，但国内访问可能较慢。
+若天气 API 不可用，默认**静默跳过**天气写入，不影响 FIT 文件生成。
 
 ## Docker 部署 + Nginx 反向代理
 
