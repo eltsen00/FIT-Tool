@@ -13,6 +13,8 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY server.js .
 COPY public/ ./public/
+COPY USAGE.md .
+COPY screenshots/ ./screenshots/
 USER appuser
 EXPOSE 45123
 ENV PORT=45123
