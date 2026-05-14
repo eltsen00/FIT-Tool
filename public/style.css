@@ -54,6 +54,45 @@ body {
   font-family: "SF Mono", "Fira Code", monospace;
 }
 
+.topbar-links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.topbar-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  text-decoration: none;
+  padding: 5px 14px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.topbar-link.link-github {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.topbar-link.link-github:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.topbar-link.link-usage {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: 1px solid #3b82f6;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.topbar-link.link-usage:hover {
+  background: linear-gradient(135deg, #4f8cf7, #3b72f2);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.45);
+}
+
 .topbar-actions {
   margin-left: auto;
   display: flex;

@@ -64,7 +64,7 @@ npm install
 npm start
 ```
 
-浏览器访问 `http://localhost:3000`。
+浏览器访问 `http://localhost:45123`。
 
 ### 方式二：Docker
 
@@ -72,14 +72,14 @@ npm start
 
 ```bash
 docker pull eltsen00/fit-tool
-docker run -d -p 3000:3000 --name fit-tool eltsen00/fit-tool
+docker run -d -p 45123:45123 --name fit-tool eltsen00/fit-tool
 ```
 
 **本地构建：**
 
 ```bash
 docker build -t fit-tool .
-docker run -d -p 3000:3000 --name fit-tool fit-tool
+docker run -d -p 45123:45123 --name fit-tool fit-tool
 
 # 或使用 Docker Compose
 docker compose up -d
@@ -97,13 +97,15 @@ docker run -d -p 8080:8080 -e PORT=8080 --name fit-tool eltsen00/fit-tool
 
 ## 使用方法
 
-1. 启动服务后打开 `http://localhost:3000`。
+1. 启动服务后打开 `http://localhost:45123`。
 2. 页面自动在地图上生成跑道轨迹，默认定位到 SYSU 大学城。
 3. 在左侧面板选择跑道模板，或点击地图移动跑道中心。
 4. 调整跑道方向角、长边、宽度和扰动强度。
 5. 设置默认运动参数（心率、圈数、配速）。
 6. 在"多份导出"区域为每份文件设置开始时间和参数，或使用"重新随机全部参数"。
 7. 点击"生成 FIT 文件"，浏览器自动下载。
+
+> 详细图文说明请参阅 [USAGE.md](./USAGE.md)
 
 ## 坐标系说明
 
@@ -167,13 +169,13 @@ Docker 镜像已发布至 Docker Hub：[`eltsen00/fit-tool`](https://hub.docker.
 
 ```bash
 docker pull eltsen00/fit-tool
-docker run -d -p 3000:3000 --name fit-tool eltsen00/fit-tool
+docker run -d -p 45123:45123 --name fit-tool eltsen00/fit-tool
 ```
 
 ```nginx
 # 示例 Nginx 配置
 location /fit/ {
-    proxy_pass http://127.0.0.1:3000/;
+    proxy_pass http://127.0.0.1:45123/;
 }
 ```
 

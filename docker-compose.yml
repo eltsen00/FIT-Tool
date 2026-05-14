@@ -4,5 +4,5 @@ services:
     image: fit-tool:latest
     container_name: fit-tool
     ports:
-      - "3000:3000"
+      - "45123:45123"
     restart: unless-stopped

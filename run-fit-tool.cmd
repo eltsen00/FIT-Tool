@@ -18,7 +18,7 @@ if not exist node_modules (
   )
 )
 
-echo Starting FIT web tool on http://localhost:3000 ...
+echo Starting FIT web tool on http://localhost:45123 ...
 npm start
 
 endlocal

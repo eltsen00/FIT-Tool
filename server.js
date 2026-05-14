@@ -8,10 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 45123;
 
 app.use(express.json({ limit: "5mb" }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/screenshots", express.static(path.join(__dirname, "screenshots")));
 
 const CONFIG_PATH = path.join(__dirname, "public", "config.json");
 const DEFAULT_WEATHER_CONFIG = {
@@ -1091,6 +1092,232 @@ app.post("/api/generate-fit", async (req, res) => {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: "生成 FIT 文件失败" });
+  }
+});
+
+function renderMarkdownToHtml(md) {
+  const escaped = md
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const lines = escaped.split("\n");
+  const result = [];
+  let inCodeBlock = false;
+  let inTable = false;
+  let inList = false;
+
+  function endList() {
+    if (inList) { result.push("</ul>"); inList = false; }
+  }
+
+  function endTable() {
+    if (inTable) { result.push("</tbody></table>"); inTable = false; }
+  }
+
+  function endPara() {
+    endList();
+    endTable();
+  }
+
+  function parseInline(text) {
+    let t = text;
+    t = t.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;box-shadow:0 2px 8px rgba(0,0,0,0.12);">');
+    t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return t;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+
+    // Code block toggle
+    if (line.startsWith("```")) {
+      endPara();
+      if (inCodeBlock) {
+        result.push("</code></pre>");
+        inCodeBlock = false;
+      } else {
+        result.push('<pre><code>');
+        inCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      result.push(rawLine);
+      continue;
+    }
+
+    // Blank line
+    if (line === "") {
+      endPara();
+      continue;
+    }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,4})\s+(.+)/);
+    if (headingMatch) {
+      endPara();
+      const level = headingMatch[1].length;
+      result.push(`<h${level} class="md-h${level}">${parseInline(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^[-*_]{3,}\s*$/.test(line)) {
+      endPara();
+      result.push("<hr>");
+      continue;
+    }
+
+    // Blockquote
+    if (line.startsWith("&gt; ")) {
+      endPara();
+      result.push(`<blockquote>${parseInline(line.slice(5))}</blockquote>`);
+      continue;
+    }
+
+    // Image on its own line
+    const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (imgMatch) {
+      endPara();
+      result.push(`<p class="md-img-wrap">${parseInline(line)}</p>`);
+      continue;
+    }
+
+    // Table row
+    if (line.startsWith("|") && line.endsWith("|")) {
+      endList();
+      const cells = line.slice(1, -1).split("|").map(c => c.trim());
+      if (cells.every(c => /^[-: ]+$/.test(c))) {
+        // separator row, skip
+        continue;
+      }
+      if (!inTable) {
+        result.push('<table class="md-table"><thead>');
+        result.push("<tr>" + cells.map(c => `<th>${parseInline(c)}</th>`).join("") + "</tr>");
+        result.push("</thead><tbody>");
+        inTable = true;
+      } else {
+        result.push("<tr>" + cells.map(c => `<td>${parseInline(c)}</td>`).join("") + "</tr>");
+      }
+      continue;
+    }
+
+    // Unordered list
+    const ulMatch = line.match(/^[-*]\s+(.+)/);
+    if (ulMatch) {
+      endTable();
+      if (!inList) { result.push("<ul>"); inList = true; }
+      result.push(`<li>${parseInline(ulMatch[1])}</li>`);
+      continue;
+    }
+
+    // Paragraph (default)
+    endPara();
+    result.push(`<p>${parseInline(line)}</p>`);
+  }
+
+  endPara();
+  if (inCodeBlock) result.push("</code></pre>");
+
+  return result.join("\n");
+}
+
+app.get("/usage", (req, res) => {
+  try {
+    const mdPath = path.join(__dirname, "USAGE.md");
+    const md = fs.readFileSync(mdPath, "utf-8");
+    const content = renderMarkdownToHtml(md);
+    const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>使用说明 — FIT 轨迹生成工具</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .usage-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .usage-container h1 { font-size: 2em; margin: 0 0 0.3em; color: #0f172a; }
+  .usage-container h2 {
+    font-size: 1.4em; margin: 2em 0 0.6em; padding-bottom: 0.35em;
+    border-bottom: 2px solid #e2e8f0; color: #0f172a;
+  }
+  .usage-container h3 { font-size: 1.15em; margin: 1.5em 0 0.5em; color: #334155; }
+  .usage-container h4 { font-size: 1em; margin: 1.2em 0 0.4em; color: #475569; }
+  .usage-container p { margin: 0.7em 0; }
+  .usage-container ul { margin: 0.6em 0; padding-left: 1.5em; }
+  .usage-container li { margin: 0.25em 0; }
+  .usage-container code {
+    background: #e2e8f0; padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9em;
+  }
+  .usage-container pre {
+    background: #1e293b; color: #e2e8f0; padding: 16px 20px;
+    border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6;
+  }
+  .usage-container pre code { background: none; padding: 0; border-radius: 0; }
+  .usage-container blockquote {
+    margin: 12px 0; padding: 10px 16px;
+    border-left: 4px solid #3b82f6; background: #eff6ff;
+    border-radius: 0 6px 6px 0; color: #1e40af;
+  }
+  .usage-container hr { margin: 2em 0; border: none; border-top: 1px solid #e2e8f0; }
+  .usage-container table {
+    width: 100%; border-collapse: collapse; margin: 0.8em 0;
+    font-size: 0.95em;
+  }
+  .usage-container th, .usage-container td {
+    text-align: left; padding: 9px 14px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .usage-container th { background: #f1f5f9; font-weight: 700; color: #0f172a; }
+  .usage-container td { color: #334155; }
+  .usage-container img {
+    max-width: 100%; border-radius: 8px; margin: 8px 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  .usage-container a { color: #2563eb; text-decoration: none; }
+  .usage-container a:hover { text-decoration: underline; }
+  .usage-container .md-img-wrap { text-align: center; }
+  .back-link {
+    display: inline-block; margin-bottom: 24px; color: #64748b;
+    font-size: 14px; text-decoration: none;
+  }
+  .back-link:hover { color: #1e293b; text-decoration: underline; }
+  @media (max-width: 768px) {
+    .usage-container { padding: 20px 16px 60px; }
+    .usage-container h1 { font-size: 1.5em; }
+  }
+</style>
+</head>
+<body>
+<div class="usage-container">
+<p><a href="/" class="back-link">&larr; 返回工具</a></p>
+${content}
+</div>
+</body>
+</html>`;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("无法加载使用说明");
   }
 });
 

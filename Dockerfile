@@ -14,6 +14,6 @@ COPY --from=build /app/node_modules ./node_modules
 COPY server.js .
 COPY public/ ./public/
 USER appuser
-EXPOSE 3000
-ENV PORT=3000
+EXPOSE 45123
+ENV PORT=45123
 CMD ["node", "server.js"]
